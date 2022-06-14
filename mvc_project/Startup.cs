@@ -23,6 +23,13 @@ namespace mvc_project
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+          services.AddDistributedMemoryCache();
+            services.AddSession(option => 
+            {
+                option.IdleTimeout = TimeSpan.FromHours(8);
+                option.Cookie.HttpOnly = true;
+                option.Cookie.IsEssential = true;
+            });
             services.AddControllersWithViews();
         }
 
@@ -45,6 +52,8 @@ namespace mvc_project
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {
