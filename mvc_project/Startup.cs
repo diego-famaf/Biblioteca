@@ -23,7 +23,7 @@ namespace mvc_project
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-          services.AddDistributedMemoryCache();
+          services.AddDistributedMemoryCache();//de la linea 26 a 32 para poder usar variables de exepcion
             services.AddSession(option => 
             {
                 option.IdleTimeout = TimeSpan.FromHours(8);
@@ -53,7 +53,7 @@ namespace mvc_project
 
             app.UseAuthorization();
 
-            app.UseSession();
+            app.UseSession();//para usar variables de exepcion
 
             app.UseEndpoints(endpoints =>
             {
