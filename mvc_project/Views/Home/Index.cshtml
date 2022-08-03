@@ -1,4 +1,20 @@
-﻿@{
+﻿@model mvc_project.Models.Login.LoginViewModel
+@{
+    Layout = "_LayoutLogin";
+}
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
+<form action='@Url.Content("~/Home/Login")' method = "post">
+    @if (!Model.isLogged)
+    {
+        <span style = "text-color: red"></span>       
+    }
+    <input type="text" class="input-group mb-3" value="" name="userName" id="user_name" placeholder="Ingrese su nombre de usuario">
+    <br><br>
+    <input type="password" class="input-group mb-3" value="" name="password" id="password" placeholder="Ingrese su contraseña">
+    <br><br>
+    <button type="submit" class="btn btn-primary btn-lg" >Ingresar</button>
+</form>
