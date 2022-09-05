@@ -10,7 +10,7 @@
 <form action='@Url.Content("~/Home/Login")' method = "post">
     @if (!Model.isLogged)
     {
-        <span style = "text-color: red"></span>       
+        <span style = "color:red">@Model.message</span>       
     }
     <input type="text" class="input-group mb-3" value="" name="userName" id="user_name" placeholder="Ingrese su nombre de usuario">
     <br><br>

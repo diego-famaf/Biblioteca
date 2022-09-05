@@ -42,7 +42,7 @@ namespace mvc_project.Controllers
                 return View("~/Views/Home/Index.cshtml",loginViewModel);
             }
             
-            if(!loginModel.userName.Equals("Admin") || (!loginModel.password.Equals("Admin")))
+            if(loginModel.userName.Equals("Admin") && (loginModel.password.Equals("Admin")))
             {
                 return Redirect("~/Panel/Index");
             }
