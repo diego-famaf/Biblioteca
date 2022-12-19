@@ -16,6 +16,7 @@ namespace mvc_project
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            entity_library.Comun.Configuracion.Instance.DefaultStringConnection = configuration.GetConnectionString("DefaultConnection");
         }
 
         public IConfiguration Configuration { get; }

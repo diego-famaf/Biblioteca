@@ -28,16 +28,16 @@ namespace mvc_project.Controllers
             {
                 col1 = "columna 1",
                 col2 = "columna 2",
-                col3 = "columna 3",
-                col4 = "columna 4"
+                col3 = "columna 3"
+                
             });
 
             list.Add(new 
             {
                 col1 = "columna 1",
                 col2 = "columna 2",
-                col3 = "columna 3",
-                col4 = "columna 4"
+                col3 = "columna 3"
+                
             });
 
             return Json(JsonReturn.SuccessWithInnerObject(new

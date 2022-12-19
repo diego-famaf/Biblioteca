@@ -1,21 +1,25 @@
 ﻿@{
-    ViewData["Title"] = "Usuarios";
+    ViewData["Title"] = "Books";
     Layout = "_Layout";
 }
 
-<button class="btn btn-primary" onclick="nuevoUsuario()">Nuevo usuario</button>
+<button class="btn btn-primary" onclick="nuevoLibro()">Nuevo libro</button>
 <br>
 <br>
 <div class="row">
     <table width="100%" 
             class="table" 
-            id="grid_usuarios" 
+            id="grid_libros" 
             style="table-layout: fixed; word-break: break-word !important;">
         <thead class="thead-default">
             <tr>
-                <th>Nombre</th>
+                <th>Author</th>
                 <th>Apellido</th>
-                <th>Nombre de usuario</th>
+                <th>Titulo del libro</th>
+                <th>Editorial</th>
+                <th>Coleccion</th>
+                <th>score</th>
+                <th>reseña</th>
                 <th></th>
             </tr>
         </thead>
@@ -27,27 +31,56 @@
 <script>
     $(document).ready(function () {
         var columns = [{
-            "data": "nombrePersona",
-            "name": "nombrePersona",
+            "data": "nombreAuthor",
+            "name": "nombreAuthor",
             "searchable": true,
             "visible": true,
             "orderable": true,
             defaultContent: ""
         }, {
-            "data": "apellidoPersona",
-            "name": "apellidoPersona",
+            "data": "apellidoAuthor",
+            "name": "apellidoAuthor",
             "searchable": true,
             "visible": true,
             "orderable": true,
             defaultContent: ""
         }, {
-            "data": "nombreUsuario",
-            "name": "nombreUsuario",
+            "data": "nombreBooks",
+            "name": "nombreBooks",
             "searchable": true,
             "visible": true,
             "orderable": true,
             defaultContent: ""
         }, {
+            "data": "editorial",
+            "name": "editorial",
+            "searchable": true,
+            "visible": true,
+            "orderable": true,
+            defaultContent: ""
+        }, {
+            "data": "collection",
+            "name": "collection",
+            "searchable": true,
+            "visible": true,
+            "orderable": true,
+            defaultContent: ""
+        }, {
+            "data": "score",
+            "name": "score",
+            "searchable": true,
+            "visible": true,
+            "orderable": true,
+            defaultContent: "*"
+        }, {
+            "data": "review",
+            "name": "review",
+            "searchable": true,
+            "visible": true,
+            "orderable": true,
+            defaultContent: ""
+        },
+            {
             data: function (row, type, set) {
                 var s = '';
                 
@@ -55,7 +88,7 @@
                     `<button 
                         type='button' 
                         class='btn btn-sm btn-secondary' 
-                        onclick='editarUsuario(${row.id})'
+                        onclick='editarLibro(${row.id})'
                         title='Editar'
                         style='margin-left:2px;background-color:green;'>
                             <svg class="c-icon glyphicon" style='width:12px;height:12px;margin-top:-3px;'>
@@ -69,7 +102,7 @@
                     `<button 
                         type='button' 
                         class='btn btn-sm btn-secondary' 
-                        onclick='verUsuario(${row.id})'
+                        onclick='verLibro(${row.id})'
                         title='Ver'
                         style='margin-left:2px;background-color:green;'>
                             <svg class="c-icon glyphicon" style='width:12px;height:12px;margin-top:-3px;'>
@@ -83,7 +116,7 @@
                     `<button 
                         type='button' 
                         class='btn btn-sm btn-secondary' 
-                        onclick='eliminarUsuario(${row.id}, "${row.nombreUsuario}")'
+                        onclick='eliminarLibro(${row.id}, "${row.nombreBooks}")'
                         title='Eliminar'
                         style='margin-left:2px;background-color:red;'>
                             <svg class="c-icon glyphicon" style='width:12px;height:12px;margin-top:-3px;'>
@@ -102,46 +135,46 @@
         }];
         
         createGrid(
-            'grid_usuarios', 
-            'Usuario/Listar', 
-            'usuarios', 
+            'grid_libros', 
+            'Books/Listar', 
+            'libros', 
             columns, 
             null, 
             true);
     });
 
-    function nuevoUsuario()
+    function nuevoLibro()
     {
-        window.location = urlContent + "Usuario/Nuevo";
+        window.location = urlContent + "Books/Nuevo";
     }
 
-    function editarUsuario(idUsuario)
+    function editarLibro(idBooks)
     {
-        window.location = urlContent + "Usuario/Editar?idUsuario=" + idUsuario;
+        window.location = urlContent + "Books/Editar?idBooks=" + idBooks;
     }
 
-    function verUsuario(idUsuario)
+    function verLibro(idBooks)
     {
-        window.location = urlContent + "Usuario/Ver?idUsuario=" + idUsuario;
+        window.location = urlContent + "Books/Ver?idBooks=" + idBooks;
     }
 
-    function eliminarUsuario(idUsuario, nombreUsuario)
+    function eliminarLibro(idBooks, nombreBooks)
     {
-        msjPregunta("Pregunta", "¿Está seguro que desea eliminar el usuario " + nombreUsuario + "?", function()
+        msjPregunta("Pregunta", "¿Está seguro que desea eliminar el libro " + nombreBooks + "?", function()
         {
             let data = {
-                id: idUsuario
+                id: idBooks
             };
 
             ajax(
                 "post", 
-                "Usuario/Eliminar", 
+                "Books/Eliminar", 
                 data, 
                 "Eliminando...", 
                 "Espere por favor...", 
                 function(response){
-                    msjSuccess("Éxito", "El usuario se eliminó correctamente", function(){
-                        reloadGrid("grid_usuarios", false);
+                    msjSuccess("Éxito", "El libro se eliminó correctamente", function(){
+                        reloadGrid("grid_libros", false);
                     });
                 }, null);
 

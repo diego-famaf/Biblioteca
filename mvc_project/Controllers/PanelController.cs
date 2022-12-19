@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using mvc_project.Models;
@@ -18,11 +19,15 @@ namespace mvc_project.Controllers
 
         public IActionResult Index()
         {
-            
+            LoginModel loginModel = HttpContext.Session.Get<LoginModel>(
+                                "UsuarioLogueado");
+
+            if(loginModel == null)
             {
-                return View("~/Views/Panel/Index.cshtml");
-            };
-            
+                return Redirect("~/Home/Index");
+            }
+
+            return View();
         }
 
         

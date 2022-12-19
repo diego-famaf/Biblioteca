@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using mvc_project.Models;
@@ -44,6 +45,10 @@ namespace mvc_project.Controllers
             
             if(loginModel.userName.Equals("Admin") && (loginModel.password.Equals("Admin")))
             {
+            HttpContext.Session.Set<LoginModel>(
+                                "UsuarioLogueado",
+                                loginModel);
+                
                 return Redirect("~/Panel/Index");
             }
             

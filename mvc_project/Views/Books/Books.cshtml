@@ -1,0 +1,197 @@
+﻿@model mvc_project.Models.Books.BooksViewModel
+
+@{
+    if(Model.accion == mvc_project.Models.Common.CodigosAccion.Nuevo)
+    {
+        ViewData["Title"] = "Nuevo libro";
+    }
+    else if(Model.accion == mvc_project.Models.Common.CodigosAccion.Editar)
+    {
+        ViewData["Title"] = "Editar libro";
+    }
+    else if(Model.accion == mvc_project.Models.Common.CodigosAccion.Ver)
+    {
+        ViewData["Title"] = "Ver libro";
+    }
+
+    Layout = "_Layout";
+}
+
+<input type="hidden" id="txt_id_libro" value="@Model.id">
+
+<div class="row justify-content-around" style="text-align: center;">
+    <div class=" col-xs-12 col-sm-12 col-md-6 col-lg-6">
+        <h2>@Html.Raw(ViewData["Title"])</h2>
+    </div>
+</div>
+
+<div class="row justify-content-around">
+    <div class=" col-xs-12 col-sm-12 col-md-6 col-lg-6">
+        <div class="row pb-3">
+            <div class="col-md-12 pl-0 pr-0">
+                <input  class="form-control"
+                        id="txt_nombre_author"
+                        placeholder="Nombre del author"
+                        type="text"
+                        value="@Model.nombreAuthor"
+                        @(Model.accion == mvc_project.Models.Common.CodigosAccion.Ver ? "disabled" : "") />
+            </div>
+        </div>
+        <div class="row pb-3">
+            <div class="col-md-12 pl-0 pr-0">
+                <input  class="form-control"
+                        id="txt_apellido_author"
+                        placeholder="Apellido"
+                        type="text"
+                        value="@Model.apellidoAuthor"
+                        @(Model.accion == mvc_project.Models.Common.CodigosAccion.Ver ? "disabled" : "") />
+            </div>
+        </div>
+        <div class="row pb-3">
+            <div class="col-md-12 pl-0 pr-0">
+                <input  class="form-control"
+                        id="txt_nombre_books"
+                        placeholder="Titulo del libro"
+                        type="text"
+                        value="@Model.nombreBooks"
+                        @(Model.accion == mvc_project.Models.Common.CodigosAccion.Ver ? "disabled" : "") />
+            </div>
+        </div>
+        <div class="row pb-3">
+            <div class="col-md-12 pl-0 pr-0">
+                <input  class="form-control"
+                        id="txt_editorial"
+                        placeholder="Editorial"
+                        type="text"
+                        value="@Model.editorial"
+                        @(Model.accion == mvc_project.Models.Common.CodigosAccion.Ver ? "disabled" : "") />
+            </div>
+        </div>
+        <div class="row pb-3">
+            <div class="col-md-12 pl-0 pr-0">
+                <input  class="form-control"
+                        id="txt_collection"
+                        placeholder="Coleccion"
+                        type="text"
+                        value="@Model.collection"
+                        @(Model.accion == mvc_project.Models.Common.CodigosAccion.Ver ? "disabled" : "") />
+            </div>
+        </div>
+        <div class="row pb-3">
+            <div class="col-md-12 pl-0 pr-0">
+                <input  class="form-control"
+                        id="txt_score"
+                        placeholder="Score"
+                        type="text"
+                        value="@Model.score"
+                        @(Model.accion == mvc_project.Models.Common.CodigosAccion.Ver ? "disabled" : "") />
+            </div>
+        </div>
+        <div class="row pb-3">
+            <div class="col-md-12 pl-0 pr-0">
+                <input  class="form-control"
+                        id="txt_review"
+                        placeholder="Review"
+                        type="text"
+                        value="@Model.review"
+                        @(Model.accion == mvc_project.Models.Common.CodigosAccion.Ver ? "disabled" : "") />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-around" style="text-align: center;">
+    <div class=" col-xs-12 col-sm-12 col-md-6 col-lg-6">
+        @if(Model.accion != mvc_project.Models.Common.CodigosAccion.Ver)
+        {
+            <button class="btn btn-primary" onclick="guardarLibro()">Guardar</button>
+        }
+        <button class="btn btn-secondary" onclick="cancelar()">Cancelar</button>
+    </div>
+</div>
+
+<script>
+    function cancelar()
+    {
+        msjPregunta("Pregunta", "¿Está seguro que desea cancelar?", function()
+        {
+            window.location = urlContent + "Books/Index";
+        }, function() {
+
+        });
+    }
+
+    function guardarLibro()
+    {
+        let idLibro = $("#txt_id_libro").val();
+        let nombreAuthor = $("#txt_nombre_author").val();
+        let apellidoAuthor = $("#txt_apellido_author").val();
+        let nombreBooks = $("#txt_nombre_books").val();
+        let editorial = $("#txt_editorial").val();
+        let collection = $("#txt_collection").val();
+        let score = $("#txt_score").val();
+        let review = $("#txt_review").val();
+
+        let listadoErrores = "";
+
+        if(nombreAuthor == null || nombreAuthor == "")
+        {
+            listadoErrores += "- El nombre del author es obligatorio<br>";
+        }
+        if(apellidoAuthor == null || apellidoAuthor == "")
+        {
+            listadoErrores += "- El apellido del author es obligatorio<br>";
+        }
+
+        if(nombreBooks == null || nombreBooks == "")
+        {
+            listadoErrores += "- El titulo del libro es obligatorio<br>";
+        }
+
+        if(editorial == null || editorial == "")
+        {
+            listadoErrores += "- La editorial del libro es obligatorio<br>";
+        }
+
+        if(score == null || score == "")
+        {
+            listadoErrores += "- El puntaje del libro es obligatorio<br>";
+        }
+        
+        if(review == null || review == "")
+        {
+            listadoErrores += "- La reseña del libro es obligatorio<br>";
+        }
+
+        if(listadoErrores != "")
+        {
+            msjError("Error", listadoErrores);
+            return;
+        }
+
+        let data = {
+            id: idLibro,
+            nombreAuthor: nombreAuthor,
+            apellidoAuthor: apellidoAuthor,
+            nombreBooks: nombreBooks,
+            editorial: editorial,
+            collection: collection,
+            score: score,
+            review: review,
+
+
+        };
+
+        ajax(
+            "post", 
+            "Books/Guardar", 
+            data, 
+            "Guardando...", 
+            "Espere por favor...", 
+            function(response){
+                msjSuccess("Éxito", "El libro se guardó correctamente", function(){
+                    window.location = urlContent + "Books/Index";
+                });
+            }, null);
+    }
+</script>

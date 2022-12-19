@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using biblioteca.dao_library;
+using dao_library;
+using dao_library.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,7 +14,7 @@ using service_library;
 
 namespace mvc_project.Controllers
 {
-    public class UsuarioController : Controller
+    public class UsuarioController : Controller    
     {
         private readonly ILogger<UsuarioController> _logger;
 
@@ -67,25 +69,30 @@ namespace mvc_project.Controllers
                 return Redirect("~/Home/Index");
             }
 
-            List<UsuarioModel> list = HttpContext.Session.Get<List<UsuarioModel>>("ListaUsuarios");
-
-            if(list == null)
+            using(DAOFactory df = new DAOFactory())
             {
-                list = new List<UsuarioModel>();
+                entity_library.Sistema.User user = df.DAOUser.ObtenerUsuario(idUsuario);
+
+                UsuarioViewModel usuarioViewModel = new UsuarioViewModel 
+                {
+                    accion = CodigosAccion.Editar,
+                    apellidoPersona = "",
+                    id = 0,
+                    nombrePersona = "",
+                    nombreUsuario = ""
+                };
+
+                if(user != null)
+                {
+                    usuarioViewModel.apellidoPersona = user.Name;
+                    usuarioViewModel.id = user.Id;
+                    usuarioViewModel.nombrePersona = user.Name;
+                    usuarioViewModel.nombreUsuario = user.UserName;
+                }
+
+                return View("~/Views/Usuario/Usuario.cshtml", usuarioViewModel);
             }
 
-            UsuarioModel usuarioModel = list.Find(x => x.id == idUsuario);
-            
-            UsuarioViewModel usuarioViewModel = new UsuarioViewModel 
-            {
-                accion = CodigosAccion.Editar,
-                apellidoPersona = usuarioModel.apellidoPersona,
-                id = usuarioModel.id,
-                nombrePersona = usuarioModel.nombrePersona,
-                nombreUsuario = usuarioModel.nombreUsuario
-            };
-
-            return View("~/Views/Usuario/Usuario.cshtml", usuarioViewModel);
         }
 
         public IActionResult Ver(long idUsuario)
@@ -97,88 +104,146 @@ namespace mvc_project.Controllers
                 return Redirect("~/Home/Index");
             }
 
-            List<UsuarioModel> list = HttpContext.Session.Get<List<UsuarioModel>>("ListaUsuarios");
-
-            if(list == null)
+            using(DAOFactory df = new DAOFactory())
             {
-                list = new List<UsuarioModel>();
+                entity_library.Sistema.User user = df.DAOUser.ObtenerUsuario(idUsuario);
+
+                UsuarioViewModel usuarioViewModel = new UsuarioViewModel 
+                {
+                    accion = CodigosAccion.Ver,
+                    apellidoPersona = "",
+                    id = 0,
+                    nombrePersona = "",
+                    nombreUsuario = ""
+                };
+
+                if(user != null)
+                {
+                    usuarioViewModel.apellidoPersona = user.Name;
+                    usuarioViewModel.id = user.Id;
+                    usuarioViewModel.nombrePersona = user.Name;
+                    usuarioViewModel.nombreUsuario = user.UserName;
+                }
+
+                return View("~/Views/Usuario/Usuario.cshtml", usuarioViewModel);
             }
 
-            UsuarioModel usuarioModel = list.Find(x => x.id == idUsuario);
-
-            UsuarioViewModel usuarioViewModel = new UsuarioViewModel 
-            {
-                accion = CodigosAccion.Ver,
-                apellidoPersona = usuarioModel.apellidoPersona,
-                id = usuarioModel.id,
-                nombrePersona = usuarioModel.nombrePersona,
-                nombreUsuario = usuarioModel.nombreUsuario
-            };
-
-            return View("~/Views/Usuario/Usuario.cshtml", usuarioViewModel);
         }
 
         [HttpPost]
         public JsonResult Listar(QueryGridModel queryGridModel)
         {
-            List<UsuarioModel> list = HttpContext.Session.Get<List<UsuarioModel>>("ListaUsuarios");
-            
-            if(list == null)
+            LoginModel loginModel = HttpContext.Session.Get<LoginModel>("UsuarioLogueado");
+
+            if(loginModel == null)
             {
-                list = new List<UsuarioModel>();
+                return Json(Models.Common.JsonReturn.Redirect("Home/Index"));
             }
 
-            IEnumerable<UsuarioModel> listaUsuarios = list;
-            if(queryGridModel.order != null && queryGridModel.order.Count > 0)
+            try
             {
-                if(queryGridModel.columns[queryGridModel.order[0].column].name == "nombrePersona")
+                long cantidadTotal = 0;
+                List<UsuarioModel> listaUsarios = new List<UsuarioModel>();
+
+                using (DAOFactory df = new DAOFactory())
                 {
-                    if(queryGridModel.order[0].dir == DirectionModel.asc)
+                    Ordenamiento ordenamiento = obtenerOrdenamientoUsuario(queryGridModel);
+                    List<Asociacion> asociaciones = obtenerAsociacionesUsuario();
+                    List<AtributoBusqueda> atributosBusqueda = obtenerAtributosBusquedaUsuario();
+
+                    Paginado paginado = new Paginado
                     {
-                        listaUsuarios = list.OrderBy(x => x.nombrePersona);
-                    }
-                    else
+                        Comienzo = queryGridModel.start,
+                        Cantidad = queryGridModel.length
+                    };
+
+                    IList<entity_library.Sistema.User> usuarios = df.DAOUser.ObtenerListaUsuario(
+                        queryGridModel.search != null ? queryGridModel.search.value : "",
+                        atributosBusqueda,
+                        paginado,
+                        ordenamiento,
+                        asociaciones,
+                        out cantidadTotal);
+
+                    foreach (entity_library.Sistema.User usuario in usuarios)
                     {
-                        listaUsuarios = list.OrderByDescending(x => x.nombrePersona);
+                        listaUsarios.Add(new UsuarioModel
+                        {
+                            id = usuario.Id,
+                            apellidoPersona = usuario.Name,
+                            nombrePersona = usuario.Name,
+                            nombreUsuario = usuario.UserName,
+                            password = usuario.Password
+                        });
                     }
-                }
-                else if(queryGridModel.columns[queryGridModel.order[0].column].name == "apellidoPersona")
-                {
-                    if(queryGridModel.order[0].dir == DirectionModel.asc)
+
+                    return Json(JsonReturn.SuccessWithInnerObject(new
                     {
-                        listaUsuarios = list.OrderBy(x => x.apellidoPersona);
-                    }
-                    else
-                    {
-                        listaUsuarios = list.OrderByDescending(x => x.apellidoPersona);
-                    }
-                }
-                else if(queryGridModel.columns[queryGridModel.order[0].column].name == "nombreUsuario")
-                {
-                    if(queryGridModel.order[0].dir == DirectionModel.asc)
-                    {
-                        listaUsuarios = list.OrderBy(x => x.nombreUsuario);
-                    }
-                    else
-                    {
-                        listaUsuarios = list.OrderByDescending(x => x.nombreUsuario);
-                    }
+                        draw = queryGridModel.draw,
+                        recordsFiltered = cantidadTotal,
+                        recordsTotal = cantidadTotal,
+                        data = listaUsarios
+                    }));
                 }
             }
-
-            if(queryGridModel.search != null && queryGridModel.search.value != null)
+            catch (System.Exception)
             {
-                listaUsuarios = listaUsuarios.Where(x => x.nombreUsuario.Contains(queryGridModel.search.value));
+                return Json(JsonReturn.ErrorWithSimpleMessage("Hubo un error"));
             }
-
-            return Json(JsonReturn.SuccessWithInnerObject(new
-            {
-                draw = queryGridModel.draw,
-                recordsFiltered = listaUsuarios.Count(),
-                recordsTotal = list.Count,
-                data = listaUsuarios
-            }));
         }
+
+        private static List<AtributoBusqueda> obtenerAtributosBusquedaUsuario()
+        {
+            List<AtributoBusqueda> atributosBusqueda = new List<AtributoBusqueda>();
+
+            atributosBusqueda.Add(new AtributoBusqueda
+            {
+                NombreAtributo = "Usuario.NombreUsuario",
+                TipoDato = TipoDato.String
+            });
+
+            atributosBusqueda.Add(new AtributoBusqueda
+            {
+                NombreAtributo = "Usuario.NombreCompleto",
+                TipoDato = TipoDato.String
+            });
+
+            return atributosBusqueda;
+        }
+
+        private static List<Asociacion> obtenerAsociacionesUsuario()
+        {
+            List<Asociacion> asociaciones = new List<Asociacion>();
+
+            return asociaciones;
+        }
+
+        private static Ordenamiento obtenerOrdenamientoUsuario(
+            QueryGridModel modeloConsulta)
+        {
+            Ordenamiento ordenamiento = new Ordenamiento
+            {
+                Atributo = "Usuario.NombreCompleto",
+                Direccion = "asc"
+            };
+
+            if (modeloConsulta.order != null &&
+                modeloConsulta.order.Count > 0)
+            {
+                int columnIndex = modeloConsulta.order[0].column;
+                string col = modeloConsulta.columns[columnIndex].data;
+
+                if (col == "nombrePersona") col = "Usuario.NombreCompleto";
+                else if(col == "nombreUsuario") col = "Usuario.NombreUsuario";
+                else col = "Usuario.NombreCompleto";
+
+                ordenamiento.Atributo = col;
+                ordenamiento.Direccion =
+                    modeloConsulta.order[0].dir == DirectionModel.desc ? "desc" : "asc";
+            }
+
+            return ordenamiento;
+        }    
 
         [HttpPost]
         public JsonResult Guardar(UsuarioModel usuarioModel)
@@ -190,33 +255,39 @@ namespace mvc_project.Controllers
                 return Json(Models.Common.JsonReturn.Redirect("Home/Index"));
             }
 
-            List<UsuarioModel> list = HttpContext.Session.Get<List<UsuarioModel>>("ListaUsuarios");
-
-            if(list == null)
+            try
             {
-                list = new List<UsuarioModel>();
-            }
-
-            if(usuarioModel.id == 0)
-            {
-                usuarioModel.id = list.Count + 1;
-                list.Add(usuarioModel);
-            }
-            else
-            {
-                UsuarioModel usuario = list.Find(x => x.id == usuarioModel.id);
-                usuario.apellidoPersona = usuarioModel.apellidoPersona;
-                usuario.nombrePersona = usuarioModel.nombrePersona;
-                if(!string.IsNullOrEmpty(usuarioModel.password))
+                using (DAOFactory df = new DAOFactory())
                 {
-                    usuario.password = usuarioModel.password;
+                    entity_library.Sistema.User usuario = df.DAOUser.ObtenerUsuario(usuarioModel.id);
+                   
+                    if(usuario == null)
+                    {
+                        usuario = new entity_library.Sistema.User();
+                        
+                    }
+
+                    usuario.Name = usuarioModel.nombrePersona;
+                    usuario.UserName = usuarioModel.nombreUsuario;
+                    
+                    if((usuarioModel.id != 0 && !string.IsNullOrEmpty(usuarioModel.password)) ||
+                        usuarioModel.id == 0)
+                    {
+                        //Si estoy editando y la pass cambió, o si el usuario es nuevo.
+                        usuario.Password = usuarioModel.password;
+                    }
+
+                    df.BeginTrans();
+                    df.DAOUser.Guardar(usuario);
+                    df.Commit();
+
+                    return Json(JsonReturn.SuccessWithoutInnerObject());
                 }
-                usuario.nombreUsuario = usuarioModel.nombreUsuario;
             }
-
-            HttpContext.Session.Set<List<UsuarioModel>>("ListaUsuarios", list);
-
-            return Json(JsonReturn.SuccessWithoutInnerObject());
+            catch (Exception)
+            {
+                return Json(JsonReturn.ErrorWithSimpleMessage("Hubo un error"));
+            }
         }
 
         [HttpPost]
@@ -229,25 +300,28 @@ namespace mvc_project.Controllers
                 return Json(Models.Common.JsonReturn.Redirect("Home/Index"));
             }
 
-            List<UsuarioModel> list = HttpContext.Session.Get<List<UsuarioModel>>("ListaUsuarios");
-
-            if(list == null)
+            try
             {
-                list = new List<UsuarioModel>();
-            }
+                using(DAOFactory df = new DAOFactory())
+                {
+                    entity_library.Sistema.User usuario = df.DAOUser.ObtenerUsuario(id);
 
-            UsuarioModel usuario = list.Find(x => x.id == id);
-            
-            if(usuario == null)
+                    if(usuario == null)
+                    {
+                        return Json(JsonReturn.ErrorWithSimpleMessage("El usuario no existe"));
+                    }
+
+                    df.BeginTrans();
+                    df.DAOUser.EliminarUsuario(usuario);
+                    df.Commit();
+                }
+
+                return Json(JsonReturn.SuccessWithoutInnerObject());
+            }
+            catch(Exception)
             {
-                return Json(Models.Common.JsonReturn.ErrorWithSimpleMessage("El usuario que desea eliminar no existe más"));
+                return Json(JsonReturn.ErrorWithSimpleMessage("Se generó un error"));
             }
-            
-            list.Remove(usuario);
-            
-            HttpContext.Session.Set<List<UsuarioModel>>("ListaUsuarios", list);
-
-            return Json(JsonReturn.SuccessWithoutInnerObject());
         }
     }
 }
